@@ -21,6 +21,8 @@
 #endif
 
 #include "MessengerTypeSupportImpl.h"
+#include <stdlib.h>
+#include <time.h>
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 {
@@ -155,20 +157,23 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     ws->detach_condition(condition);
 
+    /* initialize random seed: */
+    srand(time(NULL));
+
     // Write samples
     Messenger::Message message;
-    message.subject_id = 99;
+    message.subject_id = rand() % 100;
 
     message.from = "Comic Book Guy";
     message.subject = "Review";
     message.text = "Worst. Movie. Ever.";
     message.count = 0;
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 1000; ++i)
     {
       DDS::ReturnCode_t error = message_writer->write(message, DDS::HANDLE_NIL);
       ++message.count;
-      ++message.subject_id;
+      //++message.subject_id;
 
       if (error != DDS::RETCODE_OK)
       {

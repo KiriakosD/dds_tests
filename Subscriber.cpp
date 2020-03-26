@@ -28,7 +28,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 {
   std::cout << "Sub arguments: " << argc << "\n";
   ACE_TCHAR *args[11] = {
-      "./subscriber", "-ORBDebugLevel", "10", "-DCPSDebugLevel", "10", "-DCPSTransportDebugLevel", "6", "-ORBLogFile",
+      "./subscriber", "-ORBDebugLevel", "10", "-DCPSDebugLevel",
+      "10", "-DCPSTransportDebugLevel", "6", "-ORBLogFile",
       "subscriber.log", "-DCPSConfigFile", "rtps.ini"};
   argc = 11;
 
@@ -49,10 +50,10 @@ subscriber.log
 rtps.ini
 */
 
-  for (int i = 0; i < 11; i++)
+  /*for (int i = 0; i < 11; i++)
   {
     std::cout << args[i] << std::endl;
-  }
+  }*/
   try
   {
     // Initialize DomainParticipantFactory
@@ -169,7 +170,12 @@ rtps.ini
 
       if (matches.current_count == 0 && matches.total_count > 0)
       {
-        break;
+        // Wait until Publisher sends stuff
+        //DDS::StatusCondition_var condition = reader->get_statuscondition();
+        //condition->set_enabled_statuses(DDS::SUBSCRIPTION_MATCHED_STATUS);
+
+        //DDS::WaitSet_var ws = new DDS::WaitSet;
+        ws->attach_condition(condition);
       }
 
       DDS::ConditionSeq conditions;
