@@ -125,14 +125,22 @@ rtps.ini
     subscriber->get_default_datareader_qos(reader_qos);
     reader_qos.reliability.kind = DDS::RELIABLE_RELIABILITY_QOS;
 
+    DDS::ContentFilteredTopic_var cft =
+        participant->create_contentfilteredtopic("MyTopic-Filtered",
+                                                 topic,
+                                                 "subject_id = 2",
+                                                 DDS::StringSeq());
+    if (!cft)
+      std::cout << "shits whaked yo!!!";
     DDS::DataReader_var reader =
-        subscriber->create_datareader(topic,
+        subscriber->create_datareader(cft,
                                       reader_qos,
                                       listener,
                                       OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
     if (!reader)
     {
+      std::cout << "errrrrorrrr!!!";
       ACE_ERROR_RETURN((LM_ERROR,
                         ACE_TEXT("ERROR: %N:%l: main() -")
                             ACE_TEXT(" create_datareader failed!\n")),
@@ -166,6 +174,10 @@ rtps.ini
                           ACE_TEXT("ERROR: %N:%l: main() -")
                               ACE_TEXT(" get_subscription_matched_status failed!\n")),
                          1);
+      }
+      if (matches.current_count_change != 0)
+      {
+        std::cout << "current publishers: " << matches.current_count << "\n";
       }
 
       if (matches.current_count == 0 && matches.total_count > 0)
