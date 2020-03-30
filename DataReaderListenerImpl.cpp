@@ -16,27 +16,19 @@
 
 void DataReaderListenerImpl::on_requested_deadline_missed(
     DDS::DataReader_ptr /*reader*/,
-    const DDS::RequestedDeadlineMissedStatus & /*status*/)
-{
-}
+    const DDS::RequestedDeadlineMissedStatus & /*status*/) {}
 
 void DataReaderListenerImpl::on_requested_incompatible_qos(
     DDS::DataReader_ptr /*reader*/,
-    const DDS::RequestedIncompatibleQosStatus & /*status*/)
-{
-}
+    const DDS::RequestedIncompatibleQosStatus & /*status*/) {}
 
 void DataReaderListenerImpl::on_sample_rejected(
     DDS::DataReader_ptr /*reader*/,
-    const DDS::SampleRejectedStatus & /*status*/)
-{
-}
+    const DDS::SampleRejectedStatus & /*status*/) {}
 
 void DataReaderListenerImpl::on_liveliness_changed(
     DDS::DataReader_ptr /*reader*/,
-    const DDS::LivelinessChangedStatus & /*status*/)
-{
-}
+    const DDS::LivelinessChangedStatus & /*status*/) {}
 
 void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 {
@@ -45,9 +37,8 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
   if (!reader_i)
   {
-    ACE_ERROR((LM_ERROR,
-               ACE_TEXT("ERROR: %N:%l: on_data_available() -")
-                   ACE_TEXT(" _narrow failed!\n")));
+    ACE_ERROR((LM_ERROR, ACE_TEXT("ERROR: %N:%l: on_data_available() -")
+                             ACE_TEXT(" _narrow failed!\n")));
     ACE_OS::exit(1);
   }
 
@@ -80,12 +71,12 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
 void DataReaderListenerImpl::on_subscription_matched(
     DDS::DataReader_ptr /*reader*/,
-    const DDS::SubscriptionMatchedStatus & /*status*/)
-{
-}
+    const DDS::SubscriptionMatchedStatus & /*status*/) {}
 
 void DataReaderListenerImpl::on_sample_lost(
-    DDS::DataReader_ptr /*reader*/,
-    const DDS::SampleLostStatus & /*status*/)
+    DDS::DataReader_ptr /*reader*/, const DDS::SampleLostStatus & /*status*/) {}
+
+Messenger::Message DataReaderListenerImpl::getLastMessage()
 {
+  return m_LastMessage;
 }
