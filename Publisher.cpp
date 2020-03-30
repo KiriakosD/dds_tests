@@ -82,6 +82,119 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
                        1);
     }
 
+    // Create Publisher
+    DDS::Publisher_var publisher =
+        participant->create_publisher(PUBLISHER_QOS_DEFAULT,
+                                      0,
+                                      OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+
+    if (!publisher)
+    {
+      ACE_ERROR_RETURN((LM_ERROR,
+                        ACE_TEXT("ERROR: %N:%l: main() -")
+                            ACE_TEXT(" create_publisher failed!\n")),
+                       1);
+    }
+
+    // Create DataWriter
+    DDS::DataWriter_var writer =
+        publisher->create_datawriter(topic,
+                                     DATAWRITER_QOS_DEFAULT,
+                                     0,
+                                     OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+
+    if (!writer)
+    {
+      ACE_ERROR_RETURN((LM_ERROR,
+                        ACE_TEXT("ERROR: %N:%l: main() -")
+                            ACE_TEXT(" create_datawriter failed!\n")),
+                       1);
+    }
+
+    Messenger::MessageDataWriter_var message_writer =
+        Messenger::MessageDataWriter::_narrow(writer);
+
+    if (!message_writer)
+    {
+      ACE_ERROR_RETURN((LM_ERROR,
+                        ACE_TEXT("ERROR: %N:%l: main() -")
+                            ACE_TEXT(" _narrow failed!\n")),
+                       1);
+    }
+
+    // Block until Subscriber is available
+    DDS::StatusCondition_var condition = writer->get_statuscondition();
+    condition->set_enabled_statuses(DDS::PUBLICATION_MATCHED_STATUS);
+
+    DDS::WaitSet_var ws = new DDS::WaitSet;
+    ws->attach_condition(condition);
+
+    while (true)
+    {
+      DDS::PublicationMatchedStatus matches;
+      if (writer->get_publication_matched_status(matches) != ::DDS::RETCODE_OK)
+      {
+        ACE_ERROR_RETURN((LM_ERROR,
+                          ACE_TEXT("ERROR: %N:%l: main() -")
+                              ACE_TEXT(" get_publication_matched_status failed!\n")),
+                         1);
+      }
+
+      if (matches.current_count >= 1)
+      {
+        break;
+      }
+
+      DDS::ConditionSeq conditions;
+      DDS::Duration_t timeout = {60, 0};
+      if (ws->wait(conditions, timeout) != DDS::RETCODE_OK)
+      {
+        ACE_ERROR_RETURN((LM_ERROR,
+                          ACE_TEXT("ERROR: %N:%l: main() -")
+                              ACE_TEXT(" wait failed!\n")),
+                         1);
+      }
+    }
+
+    ws->detach_condition(condition);
+
+    /* initialize random seed: */
+    srand(time(NULL));
+
+    // Write samples
+    Messenger::Message message;
+    message.subject_id = rand() % 100;
+
+    message.from = "Comic Book Guy";
+    message.subject = "Review";
+    message.text = "Worst. Movie. Ever.";
+    message.count = 0;
+
+    for (int i = 0; i < 1000; ++i)
+    {
+      DDS::ReturnCode_t error = message_writer->write(message, DDS::HANDLE_NIL);
+      ++message.count;
+      //++message.subject_id;
+
+      if (error != DDS::RETCODE_OK)
+      {
+        ACE_ERROR((LM_ERROR,
+                   ACE_TEXT("ERROR: %N:%l: main() -")
+                       ACE_TEXT(" write returned %d!\n"),
+                   error));
+      }
+    }
+
+    // Wait for samples to be acknowledged
+    DDS::Duration_t timeout = {30, 0};
+    if (message_writer->wait_for_acknowledgments(timeout) != DDS::RETCODE_OK)
+    {
+      ACE_ERROR_RETURN((LM_ERROR,
+                        ACE_TEXT("ERROR: %N:%l: main() -")
+                            ACE_TEXT(" wait_for_acknowledgments failed!\n")),
+                       1);
+    }
+
     // Clean-up!
     participant->delete_contained_entities();
     dpf->delete_participant(participant);
