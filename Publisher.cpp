@@ -65,12 +65,17 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
                        1);
     }
 
+    //Testing QOS on topic
+    DDS::TopicQos tpc_qos;
+    participant->get_default_topic_qos(tpc_qos);
+    tpc_qos.transport_priority.value = 10;
+
     // Create Topic (Movie Discussion List)
     CORBA::String_var type_name = ts->get_type_name();
     DDS::Topic_var topic =
         participant->create_topic("Movie Discussion List",
                                   type_name,
-                                  TOPIC_QOS_DEFAULT,
+                                  tpc_qos,
                                   0,
                                   OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
@@ -96,10 +101,20 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
                        1);
     }
 
+    //Testing QOS on DataWritter
+    DDS::DataWriterQos dw_qos;
+    publisher->get_default_datawriter_qos(dw_qos);
+    dw_qos.transport_priority.value = 10;
+    dw_qos.history.kind = DDS::KEEP_ALL_HISTORY_QOS;
+    dw_qos.reliability.kind = DDS::RELIABLE_RELIABILITY_QOS;
+    dw_qos.reliability.max_blocking_time.sec = 10;
+    dw_qos.reliability.max_blocking_time.nanosec = 0;
+    dw_qos.resource_limits.max_samples_per_instance = 100;
+
     // Create DataWriter
     DDS::DataWriter_var writer =
         publisher->create_datawriter(topic,
-                                     DATAWRITER_QOS_DEFAULT,
+                                     dw_qos,
                                      0,
                                      OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
