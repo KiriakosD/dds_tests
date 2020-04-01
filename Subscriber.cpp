@@ -89,10 +89,16 @@ rtps.ini
                        1);
     }
 
+    //Testing QOS on topic
+    DDS::TopicQos tpc_qos;
+    participant->get_default_topic_qos(tpc_qos);
+    tpc_qos.transport_priority.value = 10;
+    tpc_qos.lifespan.duration.nanosec = 0.1;
+
     // Create Topic (Movie Discussion List)
     CORBA::String_var type_name = ts->get_type_name();
     DDS::Topic_var topic = participant->create_topic(
-        "Movie Discussion List", type_name, TOPIC_QOS_DEFAULT, 0,
+        "Movie Discussion List", type_name, tpc_qos, 0,
         OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
     if (!topic)
